@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from KStandard import attributesFromDict
 from numpy import *
+from KStandard import attributesFromDict
 from KGeometry import *
 from SH_Definitions import legendrePnm_theta as Pnmcos
 from SH_Definitions import factorialQuotient,epsilonm
@@ -12,7 +12,6 @@ from FieldHarmonics import *
 from numpy.linalg import pinv
 import cPickle
 import os
-
 
 class PatchShimmerDirect:
     """
