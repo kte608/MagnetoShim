@@ -1,0 +1,114 @@
+#LyX 1.4.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 245
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+\renewcommand{\theequation}{\arabic{equation}}
+\end_preamble
+\language english
+\inputencoding auto
+\fontscheme default
+\graphics default
+\paperfontsize 11
+\spacing single
+\papersize default
+\use_geometry true
+\use_amsmath 2
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\leftmargin 1in
+\topmargin 1in
+\rightmargin 1in
+\bottommargin 1in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes true
+\end_header
+
+\begin_body
+
+\begin_layout Title
+Spherical Harmonic Transform
+\end_layout
+
+\begin_layout Standard
+The test routine 'harmonizer_tester' in test/test.py produces data from a
+ definition of the field in spherical harmonics on a certain sphere and
+ then finds the spherical harmonic transform of that data.
+ The resulting spherical harmonic transform should be the same as the input
+ data.
+ The spherical harmonics used to generate the data are from 
+\emph on
+Mathematica 
+\emph default
+(See SH_Definitions.py).
+\end_layout
+
+\begin_layout Standard
+According to this test we have a function defined as
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+f(r,\theta,\phi)=\sum_{n,m}A_{n,m}T_{n,m}+B_{n,m}T_{n,m}^{\prime}\]
+
+\end_inset
+
+where 
+\begin_inset Formula \[
+T_{n,m}=r^{n}P_{n}^{m}(cos(\theta))\cos(m\phi)\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula \[
+T_{n}^{\prime}=r^{n}P_{n}^{m}(\cos(\theta))\sin(m\phi)\]
+
+\end_inset
+
+where 
+\begin_inset Formula $P_{n}^{m}(x)$
+\end_inset
+
+ are the associated Legendre polynomials as defined in 
+\emph on
+Mathematica
+\emph default
+.
+ They have no normalization
+\end_layout
+
+\begin_layout Standard
+The SHT as defined in SHT.py performed at a radius 
+\begin_inset Formula $R_{ref}$
+\end_inset
+
+ produces the coefficients 
+\begin_inset Formula $A_{n,m}$
+\end_inset
+
+ and 
+\begin_inset Formula $B_{n,m}$
+\end_inset
+
+ for the function 
+\begin_inset Formula $f(r,\theta,\phi)$
+\end_inset
+
+.
+\end_layout
+
+\end_body
+\end_document
