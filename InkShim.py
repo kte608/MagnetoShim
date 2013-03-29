@@ -4,20 +4,8 @@ from numpy import *
 from KGeometry import *
 from SH_Definitions import legendrePnm_theta as Pnmcos
 from SH_Definitions import factorialQuotient,epsilonm
-# You will need:
-# sudo apt-get install coinor-csdp
-# sudo apt-get install coinor-libcbc-dev
-# sudo apt-get install coinor-libcgl-dev
-# sudo apt-get install coinor-libclp-dev
-# sudo apt-get install coinor-coinutils-dev
-# sudo apt-get install coinor-libdylp-dev
-# sudo apt-get install coinor-libflopc++-dev
-# sudo apt-get install coinor-libipopt-dev
-# sudo apt-get install coinor-libosi-dev
-# sudo apt-get install coinor-libsymphony-dev
-# sudo apt-get install coinor-libvol-dev
-# To install easy_install use: sudo apt-get install python-pip
-# To install PuLP use: sudo easy_install -U pulp
+# You will need to run the InstallTools.sh script before this 
+# program will work.
 from pulp import *
 from SHT_Points import *
 from FieldHarmonics import *
@@ -360,6 +348,9 @@ class DirectShimmer():
         fout.close()
 
 if __name__ == '__main__':
-    #OriginalInkShim()
-    ds=DirectShimmer()
-    ds.shim()
+    OriginalInkShim()
+    # The direct shimmer is an experimental module
+    # comment out the OriginalInkShim and uncomment
+    # the direct shimmer to try it out.
+    #ds=DirectShimmer()
+    #ds.shim()

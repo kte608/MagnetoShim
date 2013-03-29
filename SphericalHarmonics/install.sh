@@ -1,11 +1,11 @@
 #!/bin/bash
 cd Definitions
-PythonInstall
+python setup.py install
 cd ..
 cd NSSHT
-PythonInstall
+python setup.py install
 cd ..
 cd SHT
 ./install.sh
-PythonInstall
+python setup.py install
 cd ..

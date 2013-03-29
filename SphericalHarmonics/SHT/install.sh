@@ -1,4 +1,4 @@
 #!/bin/env bash
 cd bSHT
-PythonInstall
+python setup.py install
 cd ..
