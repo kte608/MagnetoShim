@@ -1,0 +1,323 @@
+\documentclass{article}
+\usepackage{color}
+\usepackage{alltt}
+\usepackage[latin1]{inputenc}
+
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0,0,0}{#1}}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.16,0.16,1}{#1}}
+\newcommand{\hlesc}[1]{\textcolor[rgb]{1,0,1}{#1}}
+\newcommand{\hlstr}[1]{\textcolor[rgb]{1,0,0}{#1}}
+\newcommand{\hldstr}[1]{\textcolor[rgb]{0.51,0.51,0}{#1}}
+\newcommand{\hlslc}[1]{\textcolor[rgb]{0.51,0.51,0.51}{\it{#1}}}
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.51,0.51,0.51}{\it{#1}}}
+\newcommand{\hldir}[1]{\textcolor[rgb]{0,0.51,0}{#1}}
+\newcommand{\hlsym}[1]{\textcolor[rgb]{0,0,0}{#1}}
+\newcommand{\hlline}[1]{\textcolor[rgb]{0.33,0.33,0.33}{#1}}
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0,0,0}{\bf{#1}}}
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.51,0,0}{#1}}
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0,0,0}{\bf{#1}}}
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0,0,0.51}{#1}}
+\definecolor{bgcolor}{rgb}{1,1,1}
+
+\title{Biot_Savart.py}
+\begin{document}
+\pagecolor{bgcolor}
+\noindent
+\ttfamily
+\hlstd{}\hlslc{\#!/usr/bin/env\ python}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ The\ purpose\ of\ this\ program\ is\ to\ compute\ the\ magnetic\ field\ at\ a\ number\ of}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ positions\ given\ some\ wire\ pattern}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ I\ would\ like\ to\ do\ this\ using\ an\ expression\ for\ the\ magnetic\ field\ from\ a}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ ring}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ I\ would\ also\ like\ to\ do\ this\ using\ a\ list\ of\ line{-}segments\ where\ the\ length}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ of\ each\ segment\ is\ very\ small\ in\ relation\ to\ its\ distance\ from\ the\ field}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ point.}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ It\ would\ be\ good\ to\ couple\ this\ program\ with\ a\ program\ to\ compute\ spherical}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ harmonic\ components\ to\ the\ magnetic\ field.}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlslc{\#\ It\ would\ also\ be\ good\ to\ compute\ the\ field\ in\ harmonics\ using\ David's\ }\hspace*{\fill}\\
+\hlstd{}\hlslc{\#\ Spherical\ Harmonic\ equation.}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlkwa{from\ }\hlstd{math\ }\hlkwa{import\ }\hlstd{sqrt}\hlsym{,}\hlstd{pi}\hlsym{,}\hlstd{}\hlkwb{pow}\hspace*{\fill}\\
+\hlstd{}\hlslc{\#from\ numarray\ import\ {*}}\hspace*{\fill}\\
+\hlstd{}\hlkwa{from\ }\hlstd{scipy\ }\hlkwa{import\ }\hlstd{}\hlsym{{*}}\hspace*{\fill}\\
+\hlstd{}\hlkwa{from\ }\hlstd{KStandard\ }\hlkwa{import\ }\hlstd{listmult}\hlsym{,}\hlstd{xyz\textunderscore from\textunderscore rtp\textunderscore vect}\hlsym{,}\hlstd{xyz\textunderscore to\textunderscore rtp\textunderscore point}\hspace*{\fill}\\
+\hlkwa{from\ }\hlstd{KGeometry\ }\hlkwa{import\ }\hlstd{Vector}\hspace*{\fill}\\
+\hlkwa{from\ }\hlstd{constants\ }\hlkwa{import\ }\hlstd{mu\textunderscore 0}\hspace*{\fill}\\
+\hlkwa{import\ }\hlstd{cPickle}\hspace*{\fill}\\
+\hlslc{\#from\ scipy\ import\ cross}\hspace*{\fill}\\
+\hlstd{}\hlkwa{from\ }\hlstd{TesseralSegs\ }\hlkwa{import\ }\hlstd{smoothcoil}\hspace*{\fill}\\
+\hlkwa{from\ }\hlstd{CoilViewer\ }\hlkwa{import\ }\hlstd{seglistviewer}\hspace*{\fill}\\
+\hlkwa{from\ }\hlstd{RingArray\ }\hlkwa{import\ }\hlstd{MagFieldRingArray}\hspace*{\fill}\\
+\hlslc{\#from\ sensecoiltypes\ import\ smoothcoil}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{fieldfind}\hlstd{}\hlsym{(}\hlstd{Rformer}\hlsym{,}\hlstd{seglist}\hlsym{,}\hlstd{filename}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{dyz}\hlsym{=}\hlstd{}\hlnum{0.1}\hlstd{}\hlsym{{*}}\hlstd{Rformer\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{Rmesh}\hlsym{=}\hlstd{Rformer}\hlsym{+}\hlstd{dyz}\hlsym{/}\hlstd{}\hlnum{2.0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{plotradial}\hlsym{=}\hlstd{}\hlnum{3}\hlstd{}\hlsym{{*}}\hlstd{Rmesh\ }\hlslc{\#meters\ (a\ box\ this\ size\ will\ be\ plotted\ in\ the\ middle)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{plotaxial}\hlsym{=}\hlstd{}\hlnum{3}\hlstd{}\hlsym{{*}}\hlstd{Rmesh}\hlstd{\ \ }\hlstd{}\hlslc{\#meters}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ }\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{\hspace*{\fill}\\
+\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{rvect}\hlsym{=}\hlstd{}\hlkwd{arange}\hlstd{}\hlsym{({-}}\hlstd{plotradial}\hlsym{,}\hlstd{plotradial}\hlsym{,}\hlstd{dyz}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{zvect}\hlsym{=}\hlstd{}\hlkwd{arange}\hlstd{}\hlsym{({-}}\hlstd{plotaxial}\hlsym{,}\hlstd{plotaxial}\hlsym{,}\hlstd{dyz}\hlsym{)}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{result}\hlsym{={[}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{y}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{x\ }\hlkwa{in\ }\hlstd{rvect}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{tmp}\hlsym{=}\hlstd{}\hlkwd{Biot\textunderscore Savart\textunderscore LineSegments}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{,{[}}\hlstd{}\hlkwd{Point}\hlstd{}\hlsym{((}\hlstd{x}\hlsym{,}\hlstd{y}\hlsym{,}\hlstd{z}\hlsym{),}\hlstd{}\hlkwb{type}\hlstd{}\hlsym{=}\hlstd{}\hlstr{"CARTESIAN"}\hlstd{}\hlsym{)\ }\hlstd{}\hlkwa{for\ }\hlstd{z\ }\hlkwa{in\ }\hlstd{zvect}\hlsym{{]})}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlslc{\#print\ tmp{[}0{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlslc{\#print\ len(tmp)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{result}\hlsym{.}\hlstd{}\hlkwd{append}\hlstd{}\hlsym{(}\hlstd{tmp}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#print\ len(result)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#print\ len(result{[}0{]})}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{q}\hlsym{={[}}\hlstd{}\hlstr{"rvect,zvect,result(x,y,z)"}\hlstd{}\hlsym{,}\hlstd{rvect}\hlsym{,}\hlstd{zvect}\hlsym{,}\hlstd{result}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{f}\hlsym{=}\hlstd{}\hlkwb{file}\hlstd{}\hlsym{(}\hlstd{filename}\hlsym{,}\hlstd{}\hlstr{"w+"}\hlstd{}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{cPickle}\hlsym{.}\hlstd{}\hlkwd{dump}\hlstd{}\hlsym{(}\hlstd{q}\hlsym{,}\hlstd{f}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{f}\hlsym{.}\hlstd{}\hlkwd{close}\hlstd{}\hlsym{()}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{Biot\textunderscore Savart\textunderscore LineSegments}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{,}\hlstd{fieldpoints}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""Given\ some\ line\ segments\ in\ the\ form\ {[}{[}cl,{[}xs,ys,zs{]},{[}xe,ye,ze{]}{]},...{]}}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{and\ some\ field\ points\ in\ the\ form\ {[}point,...{]}.\ This\ function\ will\ return}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{a\ list\ of\ the\ form\ {[}{[}Bx,By,Bz{]},...{]}\ corresponding\ to\ the\ magnetic\ field}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{at\ each\ field\ point.}\hspace*{\fill}\\
+\hlstr{}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{!!!!\ The\ actual\ magnetic\ field\ will\ be\ the\ result\ returned\ multiplied\ by}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{the\ current\ !!!!\ The\ result\ will\ be\ computed\ for\ unity\ current.}\hspace*{\fill}\\
+\hlstr{}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{"""}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{result}\hlsym{={[}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{point\ }\hlkwa{in\ }\hlstd{fieldpoints}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{tmp}\hlsym{=}\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore LineSegments\textunderscore at\textunderscore Point}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{,}\hlstd{point}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlslc{\#print\ tmp}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{result}\hlsym{.}\hlstd{}\hlkwd{append}\hlstd{}\hlsym{(}\hlstd{tmp}\hlsym{)}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{result}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore LineSegments\textunderscore at\textunderscore Point}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{,}\hlstd{point}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""Do\ the\ calculation\ for\ a\ single\ field\ point"""}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{Bx}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{By}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Bz}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{seg\ }\hlkwa{in\ }\hlstd{seglist}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{tBx}\hlsym{,}\hlstd{tBy}\hlsym{,}\hlstd{tBz}\hlsym{=}\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore SingleSeg}\hlstd{}\hlsym{(}\hlstd{seg}\hlsym{,}\hlstd{point}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{Bx}\hlsym{+=}\hlstd{tBx\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{By}\hlsym{+=}\hlstd{tBy\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{Bz}\hlsym{+=}\hlstd{tBz\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{}\hlsym{{[}}\hlstd{Bx}\hlsym{,}\hlstd{By}\hlsym{,}\hlstd{Bz}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{\textunderscore cross}\hlstd{}\hlsym{(}\hlstd{a}\hlsym{,}\hlstd{b}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""You\ should\ really\ be\ using\ numarray\ or\ numpy\ for\ this\ stuff"""}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{x1}\hlsym{=}\hlstd{a}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{y1}\hlsym{=}\hlstd{a}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{z1}\hlsym{=}\hlstd{a}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{x2}\hlsym{=}\hlstd{b}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{y2}\hlsym{=}\hlstd{b}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{z2}\hlsym{=}\hlstd{b}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{}\hlsym{{[}(}\hlstd{y1}\hlsym{{*}}\hlstd{z2}\hlsym{{-}}\hlstd{z1}\hlsym{{*}}\hlstd{y2}\hlsym{),(}\hlstd{z1}\hlsym{{*}}\hlstd{x2}\hlsym{{-}}\hlstd{x1}\hlsym{{*}}\hlstd{z2}\hlsym{),(}\hlstd{x1}\hlsym{{*}}\hlstd{y2}\hlsym{{-}}\hlstd{y1}\hlsym{{*}}\hlstd{x2}\hlsym{){]}}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore SingleSeg}\hlstd{}\hlsym{(}\hlstd{seg}\hlsym{,}\hlstd{point}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""Biot\ Savart\ Law\ for\ a\ single\ line\ segment"""}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{start}\hlsym{=}\hlstd{seg}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{xs}\hlsym{=}\hlstd{start}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{ys}\hlsym{=}\hlstd{start}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{zs}\hlsym{=}\hlstd{start}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{end}\hlsym{=}\hlstd{seg}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{xe}\hlsym{=}\hlstd{end}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{ye}\hlsym{=}\hlstd{end}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{ze}\hlsym{=}\hlstd{end}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{midpoint}\hlsym{={[}(}\hlstd{xs}\hlsym{+}\hlstd{xe}\hlsym{)/}\hlstd{}\hlnum{2.0}\hlstd{}\hlsym{,(}\hlstd{ys}\hlsym{+}\hlstd{ye}\hlsym{)/}\hlstd{}\hlnum{2.0}\hlstd{}\hlsym{,(}\hlstd{zs}\hlsym{+}\hlstd{ze}\hlsym{)/}\hlstd{}\hlnum{2.0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#print\ midpoint}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{dl}\hlsym{=}\hlstd{}\hlkwd{array}\hlstd{}\hlsym{({[}(}\hlstd{xe}\hlsym{{-}}\hlstd{xs}\hlsym{),(}\hlstd{ye}\hlsym{{-}}\hlstd{ys}\hlsym{),(}\hlstd{ze}\hlsym{{-}}\hlstd{zs}\hlsym{){]})}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{r}\hlsym{=}\hlstd{}\hlkwd{array}\hlstd{}\hlsym{({[}(}\hlstd{point}\hlsym{.}\hlstd{x}\hlsym{{-}}\hlstd{midpoint}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}),}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlsym{(}\hlstd{point}\hlsym{.}\hlstd{y}\hlsym{{-}}\hlstd{midpoint}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}),}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlsym{(}\hlstd{point}\hlsym{.}\hlstd{z}\hlsym{{-}}\hlstd{midpoint}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]})}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlsym{{]})}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{r2}\hlsym{=}\hlstd{r}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}{*}}\hlstd{r}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}+}\hlstd{r}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}{*}}\hlstd{r}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}+}\hlstd{r}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}{*}}\hlstd{r}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{if\ }\hlstd{r2}\hlsym{$<$}\hlstd{}\hlnum{1e{-}13}\hlstd{}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlslc{\#\ This\ gives\ the\ wrong\ answer\ but\ we\ are\ too\ close\ to\ the\ wire\ to\ care\ anyways!}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{}\hlsym{{[}}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{r3}\hlsym{=}\hlstd{}\hlkwb{pow}\hlstd{}\hlsym{(}\hlstd{r2}\hlsym{,}\hlstd{}\hlnum{3.0}\hlstd{}\hlsym{/}\hlstd{}\hlnum{2.0}\hlstd{}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{}\hlkwd{cross}\hlstd{}\hlsym{(}\hlstd{dl}\hlsym{,}\hlstd{r}\hlsym{){*}(}\hlstd{mu\textunderscore 0}\hlsym{/(}\hlstd{}\hlnum{4}\hlstd{}\hlsym{{*}}\hlstd{pi}\hlsym{{*}}\hlstd{r3}\hlsym{))}\hlstd{}\hlslc{\#listmult(\textunderscore cross(dl,r),mu\textunderscore 0/(4{*}pi{*}r3))}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{Biot\textunderscore Savart\textunderscore ZRings}\hlstd{}\hlsym{(}\hlstd{ringlist}\hlsym{,}\hlstd{zvect}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""Only\ the\ z\ positions\ of\ the\ fieldpoints.}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{The\ Dimension\ inputs\ should\ all\ be\ in\ meters.}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{The\ result\ is\ in}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{Teslas/Amp"""}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{result}\hlsym{={[}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{z\ }\hlkwa{in\ }\hlstd{zvect}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{bz}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{ring\ }\hlkwa{in\ }\hlstd{ringlist}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{zR}\hlsym{=}\hlstd{ring}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{w}\hlsym{=}\hlstd{ring}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{R}\hlsym{=}\hlstd{ring}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{dz}\hlsym{=}\hlstd{z}\hlsym{{-}}\hlstd{zR\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{bz}\hlsym{+=}\hlstd{w}\hlsym{{*}(}\hlstd{mu\textunderscore 0}\hlsym{/}\hlstd{}\hlnum{2.0}\hlstd{}\hlsym{){*}(}\hlstd{R}\hlsym{{*}}\hlstd{R}\hlsym{)/}\hlstd{}\hlkwb{pow}\hlstd{}\hlsym{(}\hlstd{R}\hlsym{{*}}\hlstd{R}\hlsym{+}\hlstd{dz}\hlsym{{*}}\hlstd{dz}\hlsym{,}\hlstd{}\hlnum{1.5}\hlstd{}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{result}\hlsym{.}\hlstd{}\hlkwd{append}\hlstd{}\hlsym{(}\hlstd{bz}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{result\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{Biot\textunderscore Savart\textunderscore Rings}\hlstd{}\hlsym{(}\hlstd{ringlist}\hlsym{,}\hlstd{fieldpoints\textunderscore xyz}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""the\ ringlist\ is\ {[}{[}wraps,zpos,rpos{]},{[}wraps,zpos,rpos{]},etc{]}.\ The\ fieldpoints\textunderscore xyz\ is}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{{[}point,point,...{]}\ of\ the\ desired\ fieldpoints\ in\ type\ 'point'.\ The\ result\ needs\ to\ be\ multiplied\ by}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{the\ current.\ It\ is\ in\ teslas,amp\ {[}{[}Bx,By,Bz{]},{[}Bx,By,Bz{]},...{]}}\hspace*{\fill}\\
+\hlstr{}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{The\ result\ is\ in\ Teslas/amp\ and\ the\ inputs\ should\ all\ be\ in\ meters\ or}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{number\ of\ wraps}\hspace*{\fill}\\
+\hlstr{}\hlstd{\ \ \ \ }\hlstr{"""}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{result}\hlsym{={[}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{p\ }\hlkwa{in\ }\hlstd{fieldpoints\textunderscore xyz}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{fieldpoint}\hlsym{=}\hlstd{}\hlkwd{Vector}\hlstd{}\hlsym{(}\hlstd{p}\hlsym{,}\hlstd{}\hlkwb{type}\hlstd{}\hlsym{=}\hlstd{}\hlstr{"CARTESIAN"}\hlstd{}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{result}\hlsym{.}\hlstd{}\hlkwd{append}\hlstd{}\hlsym{(}\hlstd{}\hlkwd{MagFieldRingArray}\hlstd{}\hlsym{(}\hlstd{ringlist}\hlsym{,}\hlstd{fieldpoint}\hlsym{))}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\hlstd{}\hlslc{\#\textunderscore Biot\textunderscore Savart\textunderscore Rings\textunderscore singlepoint(ringlist,point))}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{result}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore Rings\textunderscore singlepoint}\hlstd{}\hlsym{(}\hlstd{ringlist}\hlsym{,}\hlstd{fieldpoint\textunderscore xyz}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Bx}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{By}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Bz}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{ring\ }\hlkwa{in\ }\hlstd{ringlist}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{tBx}\hlsym{,}\hlstd{tBy}\hlsym{,}\hlstd{tBz}\hlsym{=}\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore SingleRing}\hlstd{}\hlsym{(}\hlstd{ring}\hlsym{,}\hlstd{fieldpoint\textunderscore xyz}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{Bx}\hlsym{+=}\hlstd{tBx\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{By}\hlsym{+=}\hlstd{tBy\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{Bz}\hlsym{+=}\hlstd{tBz\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{}\hlsym{{[}}\hlstd{Bx}\hlsym{,}\hlstd{By}\hlsym{,}\hlstd{Bz}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore SingleRing}\hlstd{}\hlsym{(}\hlstd{ring\textunderscore wzr}\hlsym{,}\hlstd{fieldpoint\textunderscore xyz}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlstr{"""Uses\ Jackson's\ approximation\ described\ in\ SimpleRing.lyx"""}\hlstd{\hspace*{\fill}\\
+\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#\ Jackson's\ approximation\ only\ works\ far\ from\ the\ RING!!}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#\ See\ RingArray.py\ for\ a\ better\ way.}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{raise\ }\hlstd{}\hlkwc{Exception}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{x}\hlsym{=}\hlstd{fieldpoint\textunderscore xyz}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{y}\hlsym{=}\hlstd{fieldpoint\textunderscore xyz}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{z}\hlsym{=}\hlstd{fieldpoint\textunderscore xyz}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}{-}}\hlstd{ring\textunderscore wzr}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{R}\hlsym{=}\hlstd{ring\textunderscore wzr}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{R2}\hlsym{=}\hlstd{R}\hlsym{{*}}\hlstd{R\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{r}\hlsym{=}\hlstd{}\hlkwd{sqrt}\hlstd{}\hlsym{(}\hlstd{x}\hlsym{{*}}\hlstd{x}\hlsym{+}\hlstd{y}\hlsym{{*}}\hlstd{y}\hlsym{+}\hlstd{z}\hlsym{{*}}\hlstd{z}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{r2}\hlsym{=}\hlstd{r}\hlsym{{*}}\hlstd{r\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{R2pr2}\hlsym{=}\hlstd{R2}\hlsym{+}\hlstd{r2\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#print\ "z:\ ",z,"\ r:\ ",r}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{if\ }\hlstd{z}\hlsym{==}\hlstd{}\hlnum{0.0\ }\hlstd{}\hlkwa{and\ }\hlstd{r}\hlsym{==}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{costheta}\hlsym{=}\hlstd{}\hlnum{1.0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{sintheta}\hlsym{=}\hlstd{}\hlnum{0.0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{else}\hlstd{}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{costheta}\hlsym{=}\hlstd{z}\hlsym{/}\hlstd{}\hlkwb{float}\hlstd{}\hlsym{(}\hlstd{r}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{sintheta}\hlsym{=}\hlstd{}\hlkwd{sqrt}\hlstd{}\hlsym{(}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{-}}\hlstd{costheta}\hlsym{{*}}\hlstd{costheta}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{sin2theta}\hlsym{=}\hlstd{sintheta}\hlsym{{*}}\hlstd{sintheta\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{Br}\hlsym{=(}\hlstd{mu\textunderscore 0}\hlsym{{*}}\hlstd{R2}\hlsym{{*}}\hlstd{costheta}\hlsym{/(}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{*}}\hlstd{}\hlkwb{pow}\hlstd{}\hlsym{(}\hlstd{R2pr2}\hlsym{,}\hlstd{}\hlnum{1.5}\hlstd{}\hlsym{))){*}(}\hlstd{}\hlnum{1}\hlstd{}\hlsym{+}\hlstd{}\hlnum{15}\hlstd{}\hlsym{{*}}\hlstd{R2}\hlsym{{*}}\hlstd{r2}\hlsym{{*}}\hlstd{sin2theta}\hlsym{/(}\hlstd{}\hlnum{4}\hlstd{}\hlsym{{*}}\hlstd{R2pr2}\hlsym{{*}}\hlstd{R2pr2}\hlsym{))}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Btheta}\hlsym{={-}((}\hlstd{mu\textunderscore 0}\hlsym{{*}}\hlstd{R2}\hlsym{{*}}\hlstd{sintheta}\hlsym{)/(}\hlstd{}\hlnum{4}\hlstd{}\hlsym{{*}}\hlstd{}\hlkwb{pow}\hlstd{}\hlsym{(}\hlstd{R2pr2}\hlsym{,}\hlstd{}\hlnum{2.5}\hlstd{}\hlsym{))){*}(}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{*}}\hlstd{R2}\hlsym{{-}}\hlstd{r2}\hlsym{+((}\hlstd{}\hlnum{15}\hlstd{}\hlsym{{*}}\hlstd{R2}\hlsym{{*}}\hlstd{r2}\hlsym{{*}}\hlstd{sin2theta}\hlsym{)/(}\hlstd{}\hlnum{8}\hlstd{}\hlsym{{*}}\hlstd{R2pr2}\hlsym{{*}}\hlstd{R2pr2}\hlsym{)){*}(}\hlstd{}\hlnum{4}\hlstd{}\hlsym{{*}}\hlstd{R2}\hlsym{{-}}\hlstd{}\hlnum{3}\hlstd{}\hlsym{{*}}\hlstd{r2}\hlsym{))}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Bphi}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{fact}\hlsym{=}\hlstd{ring\textunderscore wzr}\hlsym{{[}}\hlstd{}\hlnum{0}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#print\ Br}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Bx}\hlsym{,}\hlstd{By}\hlsym{,}\hlstd{Bz}\hlsym{=}\hlstd{}\hlkwd{xyz\textunderscore from\textunderscore rtp\textunderscore vect}\hlstd{}\hlsym{({[}}\hlstd{fact}\hlsym{{*}}\hlstd{Br}\hlsym{,}\hlstd{fact}\hlsym{{*}}\hlstd{Btheta}\hlsym{,}\hlstd{fact}\hlsym{{*}}\hlstd{Bphi}\hlsym{{]},}\hlstd{}\hlkwd{xyz\textunderscore to\textunderscore rtp\textunderscore point}\hlstd{}\hlsym{({[}}\hlstd{x}\hlsym{,}\hlstd{y}\hlsym{,}\hlstd{z}\hlsym{{]}))}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{return\ }\hlstd{}\hlsym{{[}}\hlstd{Bx}\hlsym{,}\hlstd{By}\hlsym{,}\hlstd{Bz}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{testring}\hlstd{}\hlsym{():}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{from\ }\hlstd{sensecoiltypes\ }\hlkwa{import\ }\hlstd{HelixSeg\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{from\ }\hlstd{CoilViewer\ }\hlkwa{import\ }\hlstd{seglistviewer\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{from\ }\hlstd{RingArray\ }\hlkwa{import\ }\hlstd{fieldplot\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{numsegs}\hlsym{=}\hlstd{}\hlnum{30}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Rring}\hlsym{=}\hlstd{}\hlnum{1.0}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{dphi}\hlsym{=}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{*}}\hlstd{pi}\hlsym{/}\hlstd{}\hlkwb{float}\hlstd{}\hlsym{(}\hlstd{numsegs}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{seglist}\hlsym{={[}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{phistart}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{phiend}\hlsym{=}\hlstd{dphi\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{for\ }\hlstd{i\ }\hlkwa{in\ }\hlstd{}\hlkwb{range}\hlstd{}\hlsym{(}\hlstd{numsegs}\hlsym{):}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{seglist}\hlsym{.}\hlstd{}\hlkwd{append}\hlstd{}\hlsym{(}\hlstd{}\hlkwd{HelixSeg}\hlstd{}\hlsym{(}\hlstd{}\hlnum{2}\hlstd{}\hlsym{,}\hlstd{phistart}\hlsym{,{-}}\hlstd{Rring}\hlsym{,}\hlstd{phiend}\hlsym{,{-}}\hlstd{Rring}\hlsym{,}\hlstd{Rring}\hlsym{).}\hlstd{}\hlkwd{xyzSeg}\hlstd{}\hlsym{())}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{seglist}\hlsym{.}\hlstd{}\hlkwd{append}\hlstd{}\hlsym{(}\hlstd{}\hlkwd{HelixSeg}\hlstd{}\hlsym{(}\hlstd{}\hlnum{3}\hlstd{}\hlsym{,}\hlstd{phiend}\hlsym{,}\hlstd{Rring}\hlsym{,}\hlstd{phistart}\hlsym{,}\hlstd{Rring}\hlsym{,}\hlstd{Rring}\hlsym{).}\hlstd{}\hlkwd{xyzSeg}\hlstd{}\hlsym{())}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{phistart}\hlsym{=}\hlstd{phistart}\hlsym{+}\hlstd{dphi\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{phiend}\hlsym{=}\hlstd{phiend}\hlsym{+}\hlstd{dphi\hspace*{\fill}\\
+\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{seglistviewer}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{filename}\hlsym{=}\hlstd{}\hlstr{"/tmp/tmp.txt"}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{fieldfind}\hlstd{}\hlsym{(}\hlstd{Rring}\hlsym{,}\hlstd{seglist}\hlsym{,}\hlstd{filename}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{fieldplot}\hlstd{}\hlsym{(}\hlstd{filename}\hlsym{,}\hlstd{XYZS}\hlsym{={[}}\hlstd{}\hlkwa{False}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{{]})}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{fieldonline}\hlstd{}\hlsym{():}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{Rring}\hlsym{=}\hlstd{}\hlnum{1.0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{dyz}\hlsym{=}\hlstd{Rring}\hlsym{{*}}\hlstd{}\hlnum{0.1}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{plotaxial}\hlsym{=}\hlstd{}\hlnum{3}\hlstd{}\hlsym{{*}}\hlstd{Rring\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{zvect}\hlsym{=}\hlstd{}\hlkwd{arange}\hlstd{}\hlsym{({-}}\hlstd{plotaxial}\hlsym{,}\hlstd{plotaxial}\hlsym{,}\hlstd{dyz}\hlsym{)}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{x}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{y}\hlsym{=}\hlstd{}\hlnum{0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{seglist}\hlsym{={[}{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{,({-}}\hlstd{}\hlnum{5.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{),(}\hlstd{}\hlnum{5.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{){]}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{result}\hlsym{={[}}\hlstd{}\hlkwd{\textunderscore Biot\textunderscore Savart\textunderscore LineSegments\textunderscore at\textunderscore Point}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{,}\hlstd{}\hlkwd{Point}\hlstd{}\hlsym{((}\hlstd{x}\hlsym{,}\hlstd{y}\hlsym{,}\hlstd{z}\hlsym{),}\hlstd{}\hlkwb{type}\hlstd{}\hlsym{=}\hlstd{}\hlstr{"CARTESIAN"}\hlstd{}\hlsym{)){[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}\ }\hlstd{}\hlkwa{for\ }\hlstd{z\ }\hlkwa{in\ }\hlstd{zvect}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{import\ }\hlstd{pylab\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{pylab}\hlsym{.}\hlstd{}\hlkwd{plot}\hlstd{}\hlsym{(}\hlstd{result}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{pylab}\hlsym{.}\hlstd{}\hlkwd{show}\hlstd{}\hlsym{()}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{testline}\hlstd{}\hlsym{():}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{from\ }\hlstd{CoilViewer\ }\hlkwa{import\ }\hlstd{seglistviewer\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{from\ }\hlstd{RingArray\ }\hlkwa{import\ }\hlstd{fieldplot\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{Rring}\hlsym{=}\hlstd{}\hlnum{1.0}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{seglist}\hlsym{={[}{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{,({-}}\hlstd{}\hlnum{5.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{),(}\hlstd{}\hlnum{5.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{,}\hlstd{}\hlnum{0.0}\hlstd{}\hlsym{){]}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{seglistviewer}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{filename}\hlsym{=}\hlstd{}\hlstr{"/tmp/tmp.txt"}\hlstd{\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{fieldfind}\hlstd{}\hlsym{(}\hlstd{Rring}\hlsym{,}\hlstd{seglist}\hlsym{,}\hlstd{filename}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{fieldplot}\hlstd{}\hlsym{(}\hlstd{filename}\hlsym{,}\hlstd{XYZS}\hlsym{={[}}\hlstd{}\hlkwa{False}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{{]})}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{testing}\hlstd{}\hlsym{():}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#fieldonline()}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#testline()}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{testring}\hlstd{}\hlsym{()}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#from\ fileaccess\ import\ {*}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#zvect={[}0.01{*}i\ for\ i\ in\ range({-}30,31){]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#fieldpoints={[}{[}0,0,z{]}\ for\ z\ in\ zvect{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#rings={[}{[}1,0.2,.25{]}{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#Rresult=Biot\textunderscore Savart\textunderscore Rings(rings,fieldpoints)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#Rresult={[}(z,mz)\ for\ z,(mx,my,mz)\ in\ zip(zvect,Rresult){]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#Zresult=Biot\textunderscore Savart\textunderscore ZRings(rings,zvect)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#Zresult={[}(z,mz)\ for\ z,mz\ in\ zip(zvect,Zresult){]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#writefloatarray("outR.txt",Rresult)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#writefloatarray("outZ.txt",Zresult)}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{def\ }\hlstd{}\hlkwd{commandlineapp}\hlstd{}\hlsym{():}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{import\ }\hlstd{sys\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{from\ }\hlstd{RingArray\ }\hlkwa{import\ }\hlstd{fieldplot\hspace*{\fill}\\
+\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{coilfile}\hlsym{=}\hlstd{sys}\hlsym{.}\hlstd{argv}\hlsym{{[}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{fieldfile}\hlsym{=}\hlstd{sys}\hlsym{.}\hlstd{argv}\hlsym{{[}}\hlstd{}\hlnum{2}\hlstd{}\hlsym{{]}}\hspace*{\fill}\\
+\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{print\ }\hlstd{coilfile\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{if\ }\hlstd{coilfile}\hlsym{.}\hlstd{}\hlkwd{split}\hlstd{}\hlsym{(}\hlstd{}\hlstr{"."}\hlstd{}\hlsym{){[}{-}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}\ ==\ }\hlstd{}\hlstr{"xml"}\hlstd{}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{c}\hlsym{=}\hlstd{}\hlkwd{smoothcoil}\hlstd{}\hlsym{().}\hlstd{}\hlkwd{XML\textunderscore load}\hlstd{}\hlsym{(}\hlstd{coilfile}\hlsym{,}\hlstd{}\hlkwb{globals}\hlstd{}\hlsym{())}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwa{print\ }\hlstd{}\hlstr{"opened\ using\ xml"}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwa{elif\ }\hlstd{coilfile}\hlsym{.}\hlstd{}\hlkwd{split}\hlstd{}\hlsym{(}\hlstd{}\hlstr{"."}\hlstd{}\hlsym{){[}{-}}\hlstd{}\hlnum{1}\hlstd{}\hlsym{{]}\ ==\ }\hlstd{}\hlstr{"cPickle"}\hlstd{}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{c}\hlsym{=}\hlstd{}\hlkwd{smoothcoil}\hlstd{}\hlsym{().}\hlstd{}\hlkwd{load}\hlstd{}\hlsym{(}\hlstd{coilfile}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ \ \ \ \ }\hlstd{}\hlkwa{print\ }\hlstd{}\hlstr{"opened\ using\ cPickle"}\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ \ \ }\hlstd{\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{Rring}\hlsym{=}\hlstd{c}\hlsym{.}\hlstd{Rformer\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{seglist}\hlsym{=}\hlstd{c}\hlsym{.}\hlstd{seglist\hspace*{\fill}\\
+}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{seglistviewer}\hlstd{}\hlsym{(}\hlstd{seglist}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{fieldfind}\hlstd{}\hlsym{(}\hlstd{Rring}\hlsym{,}\hlstd{seglist}\hlsym{,}\hlstd{fieldfile}\hlsym{)}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{fieldplot}\hlstd{}\hlsym{(}\hlstd{fieldfile}\hlsym{,}\hlstd{XYZS}\hlsym{={[}}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{False}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{,}\hlstd{}\hlkwa{True}\hlstd{}\hlsym{{]})}\hspace*{\fill}\\
+\hlstd{}\hspace*{\fill}\\
+\hlkwa{if\ }\hlstd{\textunderscore \textunderscore name\textunderscore \textunderscore \ }\hlsym{==\ }\hlstd{}\hlstr{"\textunderscore \textunderscore main\textunderscore \textunderscore "}\hlstd{}\hlsym{:}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlslc{\#testing()}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hlkwd{commandlineapp}\hlstd{}\hlsym{()}\hspace*{\fill}\\
+\hlstd{}\hlstd{\ \ \ \ }\hlstd{}\hspace*{\fill}\\
+\hspace*{\fill}\\
+\hspace*{\fill}\\
+\mbox{}
+\normalfont
+\end {document}
+(* LaTeX generated by highlight 2.6.5, http://www.andre-simon.de/ *)

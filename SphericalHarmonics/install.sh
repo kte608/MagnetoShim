@@ -9,6 +9,3 @@ cd SHT
 ./install.sh
 python setup.py install
 cd ..
-cd FieldHarmonics
-python setup.py install
-cd ..

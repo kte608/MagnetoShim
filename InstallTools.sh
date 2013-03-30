@@ -18,6 +18,9 @@ apt-get --force-yes -y install coinor-libsymphony-dev
 apt-get --force-yes -y install coinor-libvol-dev
 apt-get --force-yes -y install python-pip             
 easy_install -U pulp 
+cd MagneticField
+./install.sh
+cd ..
 cd SphericalHarmonics
 ./install.sh
 cd ..
