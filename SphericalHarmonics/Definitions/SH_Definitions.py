@@ -1,5 +1,9 @@
 from scipy.special import lpmn
-from scipy import sin,cos,pi,sqrt,factorial
+from scipy import sin,cos,pi,sqrt
+try:
+    from scipy import factorial
+except:
+    from scipy.misc import factorial
 from math import pow,atan2
 
 from KGeometry import Vector
