@@ -7,7 +7,7 @@ from LDpsA3A4 import *
 
 #To see T(n,m) take file Tnm.cPickle
 
-def plotfunction(fname="out.cPickle",paper="A4"): #fname depends on the name of input file
+def plotfunction(fname="out.cPickle",paper="A4",cmap="color"): #fname depends on the name of input file
     """
     it plots InkShimMatrix and launches the function that writes this matrix in a postscript.
     """
@@ -30,9 +30,16 @@ def plotfunction(fname="out.cPickle",paper="A4"): #fname depends on the name of 
     #pyplot.matshow(inkShimMatrix)
     #pyplot.show()
     
-    ### GrayScale definition ###   
+    ### GrayScale definition ###
+    ### GrayScale here means the matrix to be displayed, scaled appropriately
+    ### not the colortable used to display the matrix
+
     GrayScale=1-inkShimMatrix/magLimitPerPixel
-    pyplot.matshow(GrayScale)
+##    pyplot.matshow(GrayScale)
+    if cmap=="gray":
+        pyplot.matshow(GrayScale,cmap=pyplot.cm.gray)
+    else:
+        pyplot.matshow(GrayScale)
     pyplot.show()
     ### Paper format: A3 or A4 ###
     if paper=="prompt":
@@ -66,5 +73,15 @@ def plottest(paper="A3"):
 
 if __name__=="__main__":
     import sys
-    plotfunction(fname=sys.argv[1])
+    if len(sys.argv)==1:
+        print("You have to at least specify a .cPickle filename\n")
+        exit()
+    elif len(sys.argv)==2:
+        plotfunction(fname=sys.argv[1])
+    elif len(sys.argv)==3:
+        plotfunction(fname=sys.argv[1],paper=sys.argv[2])
+    elif len(sys.argv)==4:
+        plotfunction(fname=sys.argv[1],paper=sys.argv[2],cmap=sys.argv[3])
+
+
     #plottest()    

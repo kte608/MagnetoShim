@@ -243,31 +243,31 @@ def OriginalInkShim():
     parser.add_option('--radius',"-R",
                       action="store",type="float",dest="R",
                       default=0.162,
-                      help="The cylindrical former's radius.")
+                      help="The cylindrical former's radius in meters. Default is 0.162. ")
     parser.add_option('--length',"-Z",
                       action="store",type="float",dest="Z",
                       default=0.26,
-                      help="The cylindrical former's length.")
+                      help="The cylindrical former's length in meters. Default is 0.26.")
     parser.add_option('--numZ',
                       action="store",type="int",dest="numZ",
                       default=50,
-                      help="The number of segments along the length.")
+                      help="The number of magnetisation segments along the length. Default is 50.")
     parser.add_option('--numPhi',
                       action="store",type="int",dest="numPhi",
                       default=50,
-                      help="The number of segments around the circumference.")
+                      help="The number of magnetisation segments around the circumference. Default is 50.")
     parser.add_option('--HarmBW',
                       action="store",type="int",dest="HarmBW",
                       default=4,
-                      help="The harmonic bandwidth.")
+                      help="The harmonic bandwidth. Default is 4.")
     parser.add_option('--magLimitPerArea',
                       action="store",type="float",dest="magLimitPerArea",
                       default=0.3,
-                      help="Just like it sounds.")
+                      help="Just like it sounds. Default is 0.3.")
     parser.add_option('--fname',"-o",
                       action="store",type="string",dest="fname",
                       default="out",
-                      help="The outputfilename which will have '.cPickle' appended.")
+                      help="The outputfilename which will have '.cPickle' appended. Default is out.cPickle")
     (options,args)=parser.parse_args()
 
     
